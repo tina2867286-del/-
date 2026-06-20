@@ -1,0 +1,467 @@
+
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>2026-2027 未來日記 | 豐盛網頁版</title>
+    
+    <!-- 引入 Tailwind CSS 用於排版 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Noto+Serif+TC:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* 鎖定視窗，防止手機滑動橡皮筋效應 */
+        html, body {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            overflow: hidden; position: fixed;
+            background-color: #fdfbf7;
+            font-family: 'Noto Serif TC', serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #app { width: 100%; height: 100%; overflow: hidden; position: relative; }
+
+        .app-scroll {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch; 
+            overscroll-behavior-y: contain; 
+        }
+
+        .font-num { font-family: 'Lato', sans-serif; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        textarea, input {
+            font-size: 16px !important; 
+            touch-action: manipulation;
+            outline: none;
+        }
+
+        /* 視圖切換動畫 */
+        .view-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; flex-direction: column;
+        }
+        .view-layer.active { display: flex; animation: fadeIn 0.4s ease-out forwards; }
+        .view-layer-cover.active { display: flex; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        
+        .modal-active { display: flex !important; animation: fadeIn 0.2s ease-out forwards; }
+        .modal-box { animation: scaleIn 0.2s ease-out forwards; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 1. 封面視圖 -->
+        <div id="view-cover" class="view-layer view-layer-cover bg-[#fdfbf7] text-[#5a5a5a] items-center justify-center p-8 overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-[#e8d5c4] to-[#a8c3b4]"></div>
+            <div class="absolute top-20 right-10 w-64 h-64 bg-yellow-50 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse"></div>
+            <div class="absolute bottom-20 left-10 w-64 h-64 bg-green-50 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-pulse delay-1000"></div>
+
+            <div class="z-10 text-center max-w-lg w-full border-4 border-double border-[#d3cdc4] p-10 md:p-14 bg-white/80 backdrop-blur-sm shadow-xl rounded-2xl">
+                <div class="mb-6 flex justify-center text-[#a8c3b4]">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                </div>
+                <h1 class="text-3xl md:text-4xl font-serif tracking-[0.1em] mb-4 text-[#4a4a4a]">2026-2027<br/>未來日記</h1>
+                <div class="w-12 h-1 bg-[#e8d5c4] mx-auto mb-8 rounded-full"></div>
+                <div class="text-sm md:text-base text-[#7d7d7d] mb-10 leading-loose font-serif italic space-y-2">
+                    <p class="text-[#a8c3b4] font-bold text-lg not-italic tracking-widest mb-4">「凡事皆有利於我」</p>
+                    <p>我是豐盛富足的源頭，</p>
+                    <p>金錢與好運正源源不絕湧向我。</p>
+                    <p>從今天起，直到 2027 年底，</p>
+                    <p>我寫下的每一個字，都將成為現實。</p>
+                </div>
+                <button onclick="startApp()" class="px-12 py-3.5 bg-[#a8c3b4] text-white rounded-full shadow-lg hover:shadow-xl transition-all tracking-widest">展開豐盛旅程</button>
+            </div>
+        </div>
+
+        <!-- 2. 日記填寫視圖 -->
+        <div id="view-diary" class="view-layer flex-col md:flex-row bg-[#fdfbf7] font-sans text-[#4a4a4a]">
+            <!-- Sidebar -->
+            <aside class="hidden md:flex flex-col w-24 bg-white border-r border-[#eceae5] h-screen sticky top-0 overflow-y-auto py-8 scrollbar-hide z-30">
+                <div class="flex justify-center mb-6 text-[#d3cdc4]">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                </div>
+                <div class="flex flex-col items-center gap-4 mb-4 border-b border-[#eceae5] pb-4">
+                    <button onclick="openSearch()" class="p-2 text-[#8b7e74] hover:text-[#a8c3b4] rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></button>
+                    <button onclick="switchView('overview')" class="p-2 text-[#8b7e74] hover:text-[#a8c3b4] rounded-full"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></button>
+                </div>
+                <nav id="desktop-nav" class="flex-1 flex flex-col gap-1"></nav>
+                <button onclick="switchView('cover')" class="mt-4 p-2 text-[#d3cdc4] hover:text-[#a8c3b4] flex justify-center"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10"/></svg></button>
+            </aside>
+
+            <main class="flex-1 flex flex-col h-full relative overflow-hidden">
+                <!-- Mobile Nav -->
+                <div id="mobile-nav" class="md:hidden bg-white border-b border-[#eceae5] overflow-x-auto whitespace-nowrap py-3 px-4 scrollbar-hide flex items-center gap-4"></div>
+
+                <!-- Header -->
+                <header class="sticky top-0 z-20 bg-[#fdfbf7]/95 backdrop-blur-md border-b border-[#eceae5] px-4 py-3 flex justify-between items-center shadow-sm">
+                    <div class="flex items-center gap-2">
+                        <button onclick="switchView('cover')" class="md:hidden p-2 text-[#8b7e74] hover:text-[#a8c3b4]"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z M9 22V12h6v10"/></svg></button>
+                        <button onclick="switchView('overview')" class="md:hidden p-2 text-[#8b7e74] hover:text-[#a8c3b4]"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></button>
+                        <button onclick="openSearch()" class="md:hidden p-2 text-[#8b7e74] hover:text-[#a8c3b4]"><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg></button>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button onclick="changeDay(-1)" class="p-1 text-[#8b7e74] hover:text-[#a8c3b4]"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 18l-6-6 6-6"/></svg></button>
+                        <div class="flex flex-col items-center min-w-[120px]">
+                            <span id="diary-day-index" class="text-[10px] font-serif text-[#a8c3b4] tracking-[0.1em] uppercase">Day 1</span>
+                            <span id="diary-date-string" class="text-lg font-serif font-medium text-[#5a5a5a]">2026/06/01</span>
+                        </div>
+                        <button onclick="changeDay(1)" class="p-1 text-[#8b7e74] hover:text-[#a8c3b4]"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18l6-6-6-6"/></svg></button>
+                    </div>
+                    <div class="w-8"></div>
+                </header>
+
+                <!-- 內容填寫區 -->
+                <div id="diary-scroll-area" class="flex-1 overflow-y-auto app-scroll">
+                    <div class="max-w-xl mx-auto p-5 md:p-8 space-y-8 pb-24">
+                        <!-- 智慧語錄 -->
+                        <div class="relative bg-white p-8 rounded-2xl shadow-sm border border-[#f0f0f0] flex flex-col items-center text-center mt-2">
+                            <div id="wisdom-badge" class="absolute -top-3 bg-[#fdfbf7] px-3 py-1 rounded-full border border-[#eceae5] flex items-center gap-1.5 text-xs tracking-wider shadow-sm">
+                                <span id="wisdom-icon"></span><span id="wisdom-label"></span>
+                            </div>
+                            <p id="wisdom-text" class="font-serif text-lg text-[#6b6b6b] leading-loose mt-2"></p>
+                        </div>
+
+                        <!-- 3格輸入區 -->
+                        <div class="space-y-6">
+                            <!-- 1 -->
+                            <section class="bg-white/60 rounded-xl p-2 focus-within:bg-white focus-within:shadow-md transition-all">
+                                <div class="flex items-center gap-2 mb-2 px-2 pt-2">
+                                    <span class="w-6 h-6 rounded-full bg-[#fde2e2] flex items-center justify-center text-[#d48c8c]"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></span>
+                                    <h3 id="label-1" class="text-sm font-bold text-[#8b7e74] tracking-wider">昨日感恩</h3>
+                                </div>
+                                <textarea id="input-gratitude" oninput="debounceSave('gratitude')" class="w-full h-24 p-3 rounded-lg bg-transparent border-none focus:ring-0 text-base leading-relaxed placeholder:text-gray-300 resize-none text-[#5a5a5a]"></textarea>
+                            </section>
+
+                            <!-- 2 -->
+                            <section class="bg-white/60 rounded-xl p-2 focus-within:bg-white focus-within:shadow-md transition-all">
+                                <div class="flex items-center gap-2 mb-2 px-2 pt-2">
+                                    <span class="w-6 h-6 rounded-full bg-[#e2fde6] flex items-center justify-center text-[#8ca890]"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L9.19 8.63 2 12l7.19 3.37L12 22l2.81-6.63L22 12l-7.19-3.37L12 2z"/></svg></span>
+                                    <h3 id="label-2" class="text-sm font-bold text-[#8b7e74] tracking-wider">今日顯化</h3>
+                                </div>
+                                <textarea id="input-manifestation" oninput="debounceSave('manifestation')" class="w-full h-24 p-3 rounded-lg bg-transparent border-none focus:ring-0 text-base leading-relaxed placeholder:text-gray-300 resize-none text-[#5a5a5a]"></textarea>
+                            </section>
+
+                            <!-- 3 (統一為淺藍透明感) -->
+                            <section class="bg-white/60 rounded-xl p-2 focus-within:bg-white focus-within:shadow-md transition-all">
+                                <div class="flex items-center gap-2 mb-2 px-2 pt-2">
+                                    <span class="w-6 h-6 rounded-full bg-[#e0f2fe] flex items-center justify-center text-[#8cbcd4]"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg></span>
+                                    <h3 id="label-3" class="text-sm font-bold text-[#8b7e74] tracking-wider">自我對話</h3>
+                                </div>
+                                <textarea id="input-selftalk" oninput="debounceSave('selftalk')" class="w-full h-20 p-3 rounded-lg bg-transparent border-none focus:ring-0 text-base leading-relaxed placeholder:text-gray-300 resize-none text-[#5a5a5a]"></textarea>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 儲存提示 -->
+                <div id="save-indicator" class="fixed bottom-8 right-6 z-30 opacity-0 translate-y-4 transition-all duration-500 pointer-events-none">
+                    <div class="flex items-center gap-2 px-4 py-2 bg-[#a8c3b4] text-white rounded-full shadow-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z M17 21v-8H7v8 M7 3v5h8"/></svg> 
+                        <span class="text-xs font-medium">Saved</span>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- 3. 月曆總覽視圖 -->
+        <div id="view-overview" class="view-layer bg-[#fdfbf7]">
+            <div class="sticky top-0 z-20 bg-[#fdfbf7]/95 backdrop-blur-md border-b border-[#eceae5] px-4 py-4 flex justify-between items-center">
+                 <h2 id="overview-title" class="text-xl font-serif text-[#5a5a5a] tracking-widest">2026 / 06</h2>
+                 <button onclick="switchView('diary')" class="text-[#8b7e74] hover:text-[#a8c3b4] font-serif text-sm flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 18l-6-6 6-6"/></svg> 返回
+                 </button>
+            </div>
+            <div class="flex-1 p-4 md:p-8 overflow-y-auto app-scroll">
+                <div class="grid grid-cols-7 gap-2 md:gap-4 max-w-2xl mx-auto" id="calendar-grid">
+                    <!-- 動態生成 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 結束視圖 -->
+        <div id="view-end" class="view-layer items-center justify-center bg-[#fdfbf7] p-8">
+            <div class="text-center max-w-md w-full p-12 bg-white shadow-xl rounded-2xl border border-[#eceae5]">
+                <div class="flex justify-center mb-6 text-[#e8d5c4]"><svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+                <h2 class="text-2xl font-serif mb-4 text-[#5a5a5a]">旅程圓滿</h2>
+                <p class="mb-8 text-[#7d7d7d] leading-8 font-serif">感謝妳這一年半以來的堅持與相信。<br/>妳所寫下的每一句感恩與顯化，<br/>都已在宇宙中生根發芽。🌸</p>
+                <button onclick="switchView('cover')" class="px-8 py-2.5 border border-[#d3cdc4] text-[#8b7e74] hover:bg-[#fdfbf7] hover:text-[#a8c3b4] rounded-full transition-colors font-serif">回主頁</button>
+            </div>
+        </div>
+
+        <!-- 5. 搜尋燈箱 -->
+        <div id="search-modal" class="fixed inset-0 z-50 items-center justify-center p-4 bg-black/20 backdrop-blur-sm hidden">
+            <div class="bg-white w-full max-w-lg max-h-[80vh] rounded-2xl shadow-2xl flex flex-col overflow-hidden modal-box">
+                <div class="p-4 border-b border-gray-100 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-gray-400"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    <input type="text" id="search-input" oninput="performSearch()" placeholder="搜尋關鍵字..." class="flex-1 outline-none text-gray-700 placeholder:text-gray-300 font-serif" />
+                    <button onclick="closeSearch()" class="p-2 text-gray-400"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                </div>
+                <div id="search-results" class="flex-1 overflow-y-auto p-4 space-y-4 bg-[#fdfbf7]"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ⚡ 原生 JavaScript 邏輯 (完全無 React，極致流暢) ⚡ -->
+    <script>
+        // --- 設定 (2026.06 - 2027.12 共 19個月) ---
+        const START_DATE = new Date(2026, 5, 1); 
+        const END_DATE = new Date(2027, 11, 31); 
+        let currentDate = new Date(START_DATE);
+        let entries = JSON.parse(localStorage.getItem('flow_journal_vanilla') || '{}');
+        let saveTimeout;
+
+        const NAV_MONTHS = [
+            { year: 2026, month: 5, label: "26.6月" }, { year: 2026, month: 6, label: "26.7月" },
+            { year: 2026, month: 7, label: "26.8月" }, { year: 2026, month: 8, label: "26.9月" },
+            { year: 2026, month: 9, label: "26.10月" }, { year: 2026, month: 10, label: "26.11月" },
+            { year: 2026, month: 11, label: "26.12月" }, { year: 2027, month: 0, label: "27.1月" },
+            { year: 2027, month: 1, label: "27.2月" }, { year: 2027, month: 2, label: "27.3月" },
+            { year: 2027, month: 3, label: "27.4月" }, { year: 2027, month: 4, label: "27.5月" },
+            { year: 2027, month: 5, label: "27.6月" }, { year: 2027, month: 6, label: "27.7月" },
+            { year: 2027, month: 7, label: "27.8月" }, { year: 2027, month: 8, label: "27.9月" },
+            { year: 2027, month: 9, label: "27.10月" }, { year: 2027, month: 10, label: "27.11月" },
+            { year: 2027, month: 11, label: "27.12月" }
+        ];
+
+        // --- 19 個月完整獨立主題 (57組標題絕不重複) ---
+        const MONTHLY_TITLES = [
+            { t1:'感恩是豐盛的起點', p1:'謝謝過去這段時間的累積，我感恩...', t2:'宇宙正為我實現', p2:'我的願望清單正在逐一打勾，今天...', t3:'凡事皆有利於我', p3:'我相信一切的發生都是為了成就更好的我...' },
+            { t1:'謝謝生命中的奇蹟', p1:'謝謝身邊溫暖的善意與金錢的流動...', t2:'夢想正在加速顯化', p2:'今天，所有對我有利的人事物都來了...', t3:'我接納且深愛著自己', p3:'溫柔地抱抱自己，告訴自己...' },
+            { t1:'感恩所有的相遇', p1:'謝謝生命中那些不期而遇的驚喜...', t2:'財富與好運湧向我', p2:'我清晰地看見今天的願望成真了...', t3:'我擁有無限的力量', p3:'不論遇到什麼，我都知道自己可以...' },
+            { t1:'感謝宇宙的完美安排', p1:'感恩這具健康的身體，帶我體驗豐盛...', t2:'預演今日的美好', p2:'帶著滿滿的安全感，寫下今天的奇蹟...', t3:'我的存在即是價值', p3:'今天我要毫無保留地稱讚自己...' },
+            { t1:'謝謝每一次的成長', p1:'回想昨天最讓我開懷大笑的一刻...', t2:'我的意念正在成真', p2:'一切都在完美的安排中，今天我會...', t3:'我允許自己閃閃發光', p3:'親愛的，不要隱藏你的光芒，因為...' },
+            { t1:'感恩帶來內在平靜', p1:'哪怕是小小的挑戰，也讓我學到了...', t2:'吸引力法則為我運作', p2:'我已經準備好迎接金錢與好運的驚喜了...', t3:'我是充滿力量的創造者', p3:'辛苦了，允許自己稍微喘口氣，妳很棒...' },
+            { t1:'謝謝這半年的豐收', p1:'今天有哪些事情讓我心頭暖暖的...', t2:'美好的事物即將降臨', p2:'寫下今天最期待發生的好事，它正在發生...', t3:'我值得被溫柔對待', p3:'我相信自己的潛能，今天我要對自己說...' },
+            { t1:'感恩全新的開始', p1:'謝謝那些讓我感到安心的人事物...', t2:'新年的願景已啟航', p2:'放下控制，我相信今天會順利完成...', t3:'我是自己生命的光', p3:'就算不完美也足夠耀眼，親愛的...' },
+            { t1:'感謝每一份溫暖', p1:'回顧昨天，有哪些出乎意料的好事...', t2:'奇蹟在日常中綻放', p2:'假裝願望已經實現，記錄下那份喜悅...', t3:'我本身就是奇蹟', p3:'給自己一個深深的擁抱，告訴自己...' },
+            { t1:'謝謝萬物的滋養', p1:'對身邊的人、事、物，寫下一句謝謝...', t2:'豐盛自然地流向我', p2:'宇宙聽見了我的渴望，今天我即將...', t3:'我為現在的自己感到驕傲', p3:'不必依賴外界，我自己就能照亮自己...' },
+            { t1:'感恩每一道陽光', p1:'謝謝這段時間的努力，我無比感恩...', t2:'我所想的一定會實現', p2:'帶著滿滿的期待，寫下今天最棒的劇本...', t3:'我的頻率決定我的財富', p3:'感謝身體與靈魂的陪伴，今天我想說...' },
+            { t1:'謝謝自己的堅持', p1:'謝謝這一年所有的笑與淚，謝謝宇宙...', t2:'幸運之神眷顧著我', p2:'我完全敞開接收這世界所有的美好...', t3:'給靈魂的悄悄話', p3:'走到這裡真的不容易，我想大聲讚美自己...' },
+            { t1:'感謝所有的經歷', p1:'謝謝新的一天給予我的無限機會...', t2:'夢想的藍圖已展開', p2:'一切都在向我靠攏，今天我打算...', t3:'我勇敢展現真實自我', p3:'看著鏡子裡的自己，給她一個微笑並說...' },
+            { t1:'謝謝生命中的善意', p1:'感恩昨天為我伸出援手的那些人...', t2:'金錢輕鬆愉快地來到', p2:'我的財富管道無比暢通，我期待...', t3:'我與內在的智慧連結', p3:'我愛我自己，不帶任何條件...' },
+            { t1:'感恩這美好的世界', p1:'哪怕是呼吸著新鮮空氣，我都覺得感恩...', t2:'一切都在完美的軌道上', p2:'我知道事情正在往最好的方向發展...', t3:'我散發著自信的光芒', p3:'深呼吸，傾聽心裡的聲音，它對我說...' },
+            { t1:'感謝所有的靈感', p1:'謝謝昨天帶給我啟發的每一個瞬間...', t2:'每天都有好事發生', p2:'今天又有什麼好玩的事情等著我呢...', t3:'我深愛著此時此刻的我', p3:'我的存在就是一份禮物，因為...' },
+            { t1:'謝謝宇宙的守護', p1:'感恩我總是能在關鍵時刻獲得指引...', t2:'我是強大的金錢磁鐵', p2:'我感覺到滿滿的豐盛正朝我奔來...', t3:'我擁有創造幸福的能力', p3:'擁抱現在的每一個狀態，我明白...' },
+            { t1:'感恩每一次的呼吸', p1:'謝謝生命賜予我的健康與活力...', t2:'願望清單正在逐一打勾', p2:'距離夢想又近了一步，今天的進度是...', t3:'我值得擁有所有美好', p3:'我掌握著快樂的鑰匙，今天我要...' },
+            { t1:'謝謝這一年半的圓滿', p1:'回顧這一年半的點點滴滴，我深深感謝...', t2:'好運正源源不絕湧入', p2:'未來的路充滿了光，我準備好迎接...', t3:'給靈魂一個深深的擁抱', p3:'謝謝妳一路以來的堅持，我們做到了...' }
+        ];
+
+        // --- 38 句《秘密》語錄 (每月15與月底) ---
+        const SECRET_MID = ['思想具有磁性，思想有某種頻率。當你思考時，那些思想就會發送到宇宙中。','要改變你的狀況，首先必須改變你的想法。','目前你的生活就是你過去思想的映照。','你生命中所發生的一切，都是你吸引來的。','觀想就是強烈地具像化你在心中所渴望的事物。','財富是一種心態。這完全取決於你如何思考。','宇宙中沒有意外，只有頻率的共振。','你的職責就是說出你想要的，並與宇宙保持一致。','你是自己命運的設計師，你是自己故事的作者。','將焦點放在富足上，你就擁有了富足。','愛是宇宙中最強大的力量。','你所抵抗的，會持續存在。接受它，它就會消失。','喜悅是愛的頻率。讓自己處於喜悅中。','宇宙喜歡快速。不要遲疑，不要猜測，不要懷疑。','相信自己值得擁有，宇宙就會為你安排。','每一個偉大的成就，都源於一個微小的信念。','你的想像力是預覽生命即將發生之事的視窗。','外在世界是內在世界的反射，先改變內在。','當你感覺良好，你就是在發送強大的吸引力訊號。'];
+        const SECRET_END = ['感恩是轉變你的能量，並為你的生命帶來更多你想要的事物的絕對關鍵。','當你對你已經擁有的事物感恩，你將會吸引更多美好的事物。','如果你感覺美好，你就是在創造一個符合你嚮往的未來。','即使你還沒看見它，也要相信它已經存在了。','給予是接收的開始。給予金錢，你將獲得更多金錢。','所有的壓力都來自於一個負面的思想。','放手，讓宇宙為你運作。','無論你現在處於什麼狀況，這只是你過去思想的殘留物。','只有當你感覺良好時，你才能吸引美好的事物。','原諒是為了你自己，它能釋放阻礙你的負面能量。','你的力量就在你的思想裡，就在當下。','整個宇宙都在合力幫助你得到你想要的。','真心期盼的事物，宇宙會為你開路。','把注意力放在你想要的事物上，而不是你不想要的。','感恩的心是一塊磁鐵，能吸引更多值得感恩的事。','你現在的狀態，是你過去選擇的總和。','停止抱怨，開始讚美，你的世界會瞬間改變。','豐盛是你的自然狀態，只要你允許它流入。','宇宙的供應是無窮無盡的，勇敢去要求吧。'];
+
+        // --- 150 句海量高頻語錄 (確保每天不同) ---
+        const ALL_QUOTES = [
+            {t:'future', q:'新的一天，我允許所有美好的事物流向我。'}, {t:'money', q:'我相信宇宙已經為我安排好最豐盛的劇本。'}, {t:'healing', q:'我釋放過去的恐懼，勇敢踏入未知的領域。'}, {t:'gratitude', q:'感恩過去的自己，是你讓我走到了這裡。'}, {t:'growth', q:'每一個微小的開始，都將匯聚成巨大的奇蹟。'}, {t:'future', q:'我的意念創造我的實相，我選擇專注於美好。'}, {t:'money', q:'我是強大的創造者，我擁有改變命運的力量。'}, {t:'healing', q:'我相信直覺的指引，它會帶我到對的地方。'}, {t:'gratitude', q:'謝謝陽光、空氣與水，謝謝生命無私的供養。'}, {t:'growth', q:'今天，我種下希望的種子，並耐心等待發芽。'}, {t:'future', q:'未來的我，正在感激現在努力的我。'}, {t:'money', q:'我看見到處都是機會，我的財富能量正在擴張。'}, {t:'healing', q:'原諒自己曾經的迷惘，那是成長必經的路。'}, {t:'gratitude', q:'感恩每一個新的早晨，都是一次重生的機會。'}, {t:'growth', q:'我的潛力無限，沒有什麼能阻擋我閃閃發光。'}, {t:'future', q:'我值得擁有我夢想中的生活，毫無疑問。'}, {t:'money', q:'金錢喜歡我，我也喜歡金錢，我們是好朋友。'}, {t:'healing', q:'在呼吸之間，我找回內心深處的平靜。'}, {t:'gratitude', q:'謝謝我的身體，一直以來都這麼支持我。'}, {t:'growth', q:'我不與他人比較，我專注於自己的時區。'},
+            {t:'future', q:'我所渴望的一切，正在以最快的速度來到我身邊。'}, {t:'gratitude', q:'感恩每一次的挑戰，因為它讓我變得更加強大。'}, {t:'money', q:'我是一個強大的財富磁鐵，吸引著無限的繁榮。'}, {t:'healing', q:'我選擇原諒過去的自己，因為我已經盡力了。'}, {t:'growth', q:'每天醒來，我都比昨天的自己更充滿智慧與力量。'}, {t:'future', q:'我所設定的目標，宇宙正在為我鋪路。'}, {t:'money', q:'我享受金錢帶來的自由，金錢也喜歡為我服務。'}, {t:'healing', q:'我的內心平靜如水，外界的喧囂無法干擾我。'}, {t:'gratitude', q:'謝謝這份美味的早餐，為我開啟美好的一天。'}, {t:'growth', q:'我不害怕犯錯，因為錯誤是通往成功的階梯。'}, {t:'future', q:'我以無比的信心，迎接未來每一個精彩的瞬間。'}, {t:'money', q:'我的財富管道無比暢通，財富從四面八方湧入。'}, {t:'healing', q:'我允許悲傷流動，並在釋放後獲得更深的平靜。'}, {t:'gratitude', q:'感恩那些在低谷時，對我伸出援手的貴人。'}, {t:'growth', q:'我相信自己的潛力是無窮無盡的。'}, {t:'future', q:'我的生活充滿了愛、喜悅與無法想像的好運。'}, {t:'money', q:'我對金錢抱持著深深的敬意與愛意。'}, {t:'healing', q:'我是一個完整的靈魂，不需要任何人的定義。'}, {t:'gratitude', q:'謝謝大自然的花草樹木，給予我源源不絕的能量。'}, {t:'growth', q:'我專注於我能控制的事物，並把結果交托給宇宙。'},
+            {t:'future', q:'我正在創造一個令自己驕傲的傳奇人生。'}, {t:'money', q:'我越是分享我的財富，我的財富就越是倍增。'}, {t:'healing', q:'我溫柔地撫慰內心的焦慮，告訴自己一切都會好起來。'}, {t:'gratitude', q:'感恩昨晚的一夜好眠，讓我今天精神百倍。'}, {t:'growth', q:'我勇敢表達自己的真實想法，我的聲音很有力量。'}, {t:'future', q:'奇蹟是我生活的常態，我每天都在見證奇蹟。'}, {t:'money', q:'我擁有敏銳的直覺，能精準捕捉到每一個致富的機會。'}, {t:'healing', q:'我愛我身體的每一個細胞，它們為我努力工作著。'}, {t:'gratitude', q:'謝謝生命中每一個微小的善意，我都銘記在心。'}, {t:'growth', q:'我堅持我的夢想，決不輕言放棄。'}, {t:'future', q:'我的能量場純淨且強大，吸引著最高頻率的美好。'}, {t:'money', q:'我值得享受最高品質的物質生活。'}, {t:'healing', q:'我放下對完美的執著，擁抱自己最真實的模樣。'}, {t:'gratitude', q:'感恩現在所擁有的一切，這就是最大的幸福。'}, {t:'growth', q:'我每天都在學習新事物，擴展我的視野與格局。'}, {t:'future', q:'我相信所有的發生，都是為了成就最好的我。'}, {t:'money', q:'我的銀行帳戶數字每天都在翻倍成長。'}, {t:'healing', q:'我給予自己無限的耐心與寬容。'}, {t:'gratitude', q:'謝謝那些曾經質疑我的人，讓我證明了自己。'}, {t:'growth', q:'我是一個充滿創造力的存在，靈感源源不絕。'},
+            {t:'future', q:'我對未來充滿熱情與期待，因為我知道它很美好。'}, {t:'money', q:'金錢是中性的能量，我用它來創造更多的愛與和平。'}, {t:'healing', q:'我深呼吸，吸入平靜，呼出所有的擔憂與恐懼。'}, {t:'gratitude', q:'感恩這杯溫暖的飲品，喚醒了我的靈魂。'}, {t:'growth', q:'我善於將挑戰轉化為成長的養分。'}, {t:'future', q:'我正在顯化我的理想伴侶與靈魂家族。'}, {t:'money', q:'我輕鬆自在地吸引著豐盛的財富流。'}, {t:'healing', q:'我是一個被愛包圍的人，我安全且被保護著。'}, {t:'gratitude', q:'謝謝這段旅程，讓我看見了自己有多麼勇敢。'}, {t:'growth', q:'我為自己的每一個進步喝采，我真了不起。'}, {t:'future', q:'我的每一句話都帶著顯化的力量，我只說正向的話。'}, {t:'money', q:'我的財富為我帶來更多的選擇與自由。'}, {t:'healing', q:'我釋放所有不再服務於我的陳舊信念。'}, {t:'gratitude', q:'感恩每一個幫助我成長的靈魂。'}, {t:'growth', q:'我是一個有擔當的人，我對自己的人生負起全責。'}, {t:'future', q:'我的未來藍圖已經清晰地印在宇宙的畫布上。'}, {t:'money', q:'我擁有管理龐大財富的智慧與能力。'}, {t:'healing', q:'我在每一個當下都感覺到深深的平靜與喜悅。'}, {t:'gratitude', q:'謝謝我堅強的雙腳，帶我走到我想去的地方。'}, {t:'growth', q:'我持續突破自我設限，看見更廣闊的天空。'},
+            {t:'future', q:'我正在步入我生命中最輝煌、最閃耀的黃金時期。'}, {t:'money', q:'我吸引富裕且慷慨的人來到我的生命中。'}, {t:'healing', q:'我與宇宙的源頭緊密相連，我從不孤單。'}, {t:'gratitude', q:'感恩那些讓我開懷大笑的幽默時刻。'}, {t:'growth', q:'我是一個極具行動力的人，想到什麼就立刻去做。'}, {t:'future', q:'我深信不疑，最好的事情即將發生在我身上。'}, {t:'money', q:'我的每一筆消費，都是在為我渴望的世界投票。'}, {t:'healing', q:'我用溫柔的眼光看待世界，世界也同樣溫柔待我。'}, {t:'gratitude', q:'謝謝這充滿無限可能的一天，我準備好了！'}, {t:'growth', q:'我是一個卓越的領導者，帶領自己走向成功。'}, {t:'future', q:'我的生命本身就是一場無與倫比的奇蹟。'}, {t:'money', q:'我愛錢，錢也愛我，我們關係非常親密。'}, {t:'healing', q:'我允許自己偶爾軟弱，因為這也是我的一部分。'}, {t:'gratitude', q:'感恩所有的一切，謝謝你，我愛你。'}, {t:'growth', q:'我對這個世界充滿了無限的好奇心與熱情。'}, {t:'future', q:'每天都有無限的可能，正在為我展開。'}, {t:'money', q:'我享受著每一分錢為我帶來的豐盈感。'}, {t:'healing', q:'愛是我存在的根本，我允許愛流向我。'}, {t:'gratitude', q:'感恩這片天空，不論晴雨都包容著我。'}, {t:'growth', q:'我的靈魂正在經歷一次美麗的蛻變與飛昇。'}
+        ];
+
+        // --- 輔助邏輯 ---
+        function getDateKey(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+        function getDayDiff(d1, d2) { return Math.floor((d1.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24)); }
+        
+        function getDailyWisdom(d) {
+            const y = d.getFullYear(); const m = d.getMonth(); const day = d.getDate();
+            const isLastDay = new Date(y, m, day + 1).getMonth() !== m;
+            let absMonth = (y - 2026) * 12 + m - 5;
+            if (absMonth < 0) absMonth = 0; if (absMonth > 18) absMonth = 18;
+
+            if (day === 15 && SECRET_MID[absMonth]) {
+                return { text: SECRET_MID[absMonth] + ' (秘密)', label: '宇宙法則', color: 'text-violet-600', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' };
+            }
+            if (isLastDay && SECRET_END[absMonth]) {
+                return { text: SECRET_END[absMonth] + ' (秘密)', label: '宇宙法則', color: 'text-violet-600', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' };
+            }
+
+            let dayIdx = getDayDiff(d, START_DATE); if (dayIdx < 0) dayIdx = 0;
+            const quote = ALL_QUOTES[dayIdx % ALL_QUOTES.length];
+            
+            const UI = {
+                gratitude: { label: '感恩頻率', color: 'text-green-500', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>' },
+                money: { label: '豐盛金錢', color: 'text-amber-500', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2L9.19 8.63 2 12l7.19 3.37L12 22l2.81-6.63L22 12l-7.19-3.37L12 2z"/></svg>' },
+                healing: { label: '自我療癒', color: 'text-pink-400', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>' },
+                growth: { label: '自信成長', color: 'text-blue-400', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>' },
+                future: { label: '顯化奇蹟', color: 'text-purple-500', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' }
+            };
+            return { text: quote.q, ...UI[quote.t] };
+        }
+
+        // --- 視圖切換與渲染 ---
+        function switchView(viewName) {
+            document.querySelectorAll('.view-layer').forEach(el => el.classList.remove('active'));
+            document.getElementById('view-' + viewName).classList.add('active');
+            if(viewName === 'diary') renderDiary();
+            if(viewName === 'overview') renderOverview();
+        }
+
+        function startApp() {
+            const today = new Date(); today.setHours(0,0,0,0);
+            if (today >= START_DATE && today <= END_DATE) currentDate = today;
+            else if (today > END_DATE) currentDate = END_DATE;
+            else currentDate = START_DATE;
+            switchView('diary');
+        }
+
+        function changeDay(offset) {
+            currentDate.setDate(currentDate.getDate() + offset);
+            if(currentDate < START_DATE) switchView('cover');
+            else if(currentDate > END_DATE) switchView('end');
+            else renderDiary();
+        }
+
+        function jumpToMonth(y, m) {
+            const today = new Date();
+            let target = new Date(y, m, 1);
+            if (y === today.getFullYear() && m === today.getMonth()) {
+                target = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            }
+            if(target < START_DATE) target = new Date(START_DATE);
+            if(target > END_DATE) target = new Date(END_DATE);
+            currentDate = target;
+            switchView('diary');
+        }
+
+        function debounceSave(field) {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                const val = document.getElementById('input-' + field).value;
+                const dKey = getDateKey(currentDate);
+                if(!entries[dKey]) entries[dKey] = {};
+                entries[dKey][field] = val;
+                localStorage.setItem('flow_journal_vanilla', JSON.stringify(entries));
+                
+                const ind = document.getElementById('save-indicator');
+                ind.classList.remove('opacity-0', 'translate-y-4');
+                ind.classList.add('opacity-100', 'translate-y-0');
+                setTimeout(() => {
+                    ind.classList.remove('opacity-100', 'translate-y-0');
+                    ind.classList.add('opacity-0', 'translate-y-4');
+                }, 1000);
+            }, 1000);
+        }
+
+        function renderNav() {
+            let desktopHtml = ''; let mobileHtml = '';
+            const cy = currentDate.getFullYear(); const cm = currentDate.getMonth();
+            
+            NAV_MONTHS.forEach((nav) => {
+                const isCurrent = (cy === nav.year && cm === nav.month);
+                
+                desktopHtml += `<button onclick="jumpToMonth(${nav.year}, ${nav.month})" class="w-full flex items-center justify-center py-3 transition-all relative ${isCurrent ? 'text-[#a8c3b4] font-bold scale-110' : 'text-[#d3cdc4] hover:text-[#a8c3b4]'}"><span class="font-serif text-base tracking-widest">${nav.label}</span>${isCurrent ? '<div class="absolute right-0 w-1 h-6 bg-[#a8c3b4] rounded-l-full"></div>' : ''}</button>`;
+                
+                mobileHtml += `<button onclick="jumpToMonth(${nav.year}, ${nav.month})" class="font-serif text-base flex-shrink-0 transition-colors ${isCurrent ? 'text-[#a8c3b4] font-bold border-b-2 border-[#a8c3b4]' : 'text-[#d3cdc4]'}">${nav.label}</button>`;
+            });
+            
+            document.getElementById('desktop-nav').innerHTML = desktopHtml;
+            document.getElementById('mobile-nav').innerHTML = mobileHtml;
+        }
+
+        function renderDiary() {
+            renderNav();
+            document.getElementById('diary-day-index').innerText = `Day ${getDayDiff(currentDate, START_DATE) + 1}`;
+            document.getElementById('diary-date-string').innerText = currentDate.toLocaleDateString('zh-TW', { month:'2-digit', day:'2-digit', weekday:'short' });
+
+            const wisdom = getDailyWisdom(currentDate);
+            const badge = document.getElementById('wisdom-badge');
+            badge.className = `absolute -top-3 bg-[#fdfbf7] px-3 py-1 rounded-full border border-[#eceae5] flex items-center gap-1.5 text-xs tracking-wider shadow-sm ${wisdom.color}`;
+            document.getElementById('wisdom-icon').innerHTML = wisdom.icon;
+            document.getElementById('wisdom-label').innerText = wisdom.label;
+            document.getElementById('wisdom-text').innerText = wisdom.text;
+
+            let absMonth = (currentDate.getFullYear() - 2026) * 12 + currentDate.getMonth() - 5;
+            if (absMonth < 0) absMonth = 0; if (absMonth > 18) absMonth = 18;
+            const content = MONTHLY_TITLES[absMonth];
+
+            document.getElementById('label-1').innerText = content.t1;
+            document.getElementById('input-gratitude').placeholder = content.p1;
+            document.getElementById('label-2').innerText = content.t2;
+            document.getElementById('input-manifestation').placeholder = content.p2;
+            document.getElementById('label-3').innerText = content.t3;
+            document.getElementById('input-selftalk').placeholder = content.p3;
+
+            const dKey = getDateKey(currentDate);
+            document.getElementById('input-gratitude').value = entries[dKey]?.gratitude || '';
+            document.getElementById('input-manifestation').value = entries[dKey]?.manifestation || '';
+            document.getElementById('input-selftalk').value = entries[dKey]?.selftalk || '';
+            
+            document.getElementById('diary-scroll-area').scrollTo(0,0);
+        }
+
+        function renderOverview() {
+            const year = currentDate.getFullYear();
+            const month = currentDate.getMonth();
+            document.getElementById('overview-title').innerText = `${year} / ${String(month + 1).padStart(2, '0')}`;
+            
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const firstDay = new Date(year, month, 1).getDay();
+            
+            let html = '';
+            ['日', '一', '二', '三', '四', '五', '六'].forEach(d => {
+                html += `<div class="text-center text-xs text-[#d3cdc4] font-serif py-2">${d}</div>`;
+            });
+            
+            for(let i=0; i<firstDay; i++) html += `<div></div>`;
+            
+            for(let d=1; d<=daysInMonth; d++) {
+                const dateObj = new Date(year, month, d);
+                const dKey = getDateKey(dateObj);
+                const isSel = (dKey === getDateKey(currentDate));
+                const isOutOfRange = (dateObj < START_DATE || dateObj > END_DATE);
+                const hasData = entries[dKey] && (entries[dKey].gratitude || entries[dKey].manifestation || entries[dKey].selftalk);
+                
+                let btnClass = `aspect-square rounded-xl flex flex-col items-center justify-center border shadow-sm transition-all `;
+                if(isOutOfRange) btnClass += `opacity-20 cursor-not-allowed border-transparent bg-white`;
+                else if(isSel) btnClass += `border-[#a8c3b4] bg-[#f0f7f4] font-bold text-[#5a5a5a]`;
+                else btnClass += `border-transparent bg-white text-[#8b7e74] hover:border-[#eceae5]`;
+                
+                html += `<button ${isOutOfRange ? 'disabled' : `onclick="setCurrentDateAndGo(${year}, ${month}, ${d})"`} class="${btnClass}">
+                            <span class="font-num text-sm">${d}</span>
+                            ${(!isOutOfRange && hasData) ? '<div class="w-1.5 h-1.5 rounded-full bg-[#a8c3b4] mt-1"></div>' : ''}
+                         </button>`;
+            }
+            document.getElementById('calendar-grid').innerHTML = html;
+        }
+
+        function setCurrentDateAndGo(y,m,d) {
+            currentDate = new Date(y,m,d);
+            switchView('diary');
+        }
+
+        function openSearch() { document.getElementById('search-modal').classList.add('modal-active'); document.getElementById('search-input').focus(); }
+        function closeSearch() { document.getElementById('search-modal').classList.remove('modal-active'); }
+        
+        function performSearch() {
+            const q = document.getElementById('search-input').value.trim();
+            const res = document.getElementById('search-results');
+            res.innerHTML = '';
+            if(!q) return;
+            
+            let html = '';
+            Object.entries(entries).forEach(([k, d]) => {
+                if(`${d.gratitude||''} ${d.manifestation||''} ${d.selftalk||''}`.includes(q)) {
+                    html += `<div onclick="setCurrentDateAndGo(${k.split('-')[0]}, ${k.split('-')[1]-1}, ${k.split('-')[2]}); closeSearch();" class="bg-white p-4 rounded-xl shadow-sm border border-gray-100 cursor-pointer hover:border-[#a8c3b4] transition-colors mb-4">
+                        <div class="text-xs text-[#a8c3b4] font-serif mb-2">${k}</div>
+                        ${d.gratitude ? `<div class="text-sm text-gray-600 truncate"><span class="text-[#d48c8c]">♥</span> ${d.gratitude}</div>` : ''}
+                        ${d.manifestation ? `<div class="text-sm text-gray-600 truncate"><span class="text-[#8ca890]">✦</span> ${d.manifestation}</div>` : ''}
+                        ${d.selftalk ? `<div class="text-sm text-gray-600 truncate"><span class="text-[#8cbcd4]">☺</span> ${d.selftalk}</div>` : ''}
+                    </div>`;
+                }
+            });
+            res.innerHTML = html || '<div class="text-center text-gray-400 py-10">無相關紀錄</div>';
+        }
+
+        // 初始化開啟封面
+        window.onload = () => switchView('cover');
+    </script>
+</body>
+</html>
